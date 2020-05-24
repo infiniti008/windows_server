@@ -8,9 +8,9 @@ module.exports = {
             env: {
                 "TELEGRAM_TOKEN": "374896790:AAFHPIXGoMXGfdIV3zWweKIcJaTc6C6ZQEE",
                 "NTBA_FIX_319": "1",
-                "PATH_TO_DIRECT_LOAD_FILES": "TBD",
-                "PATH_TO_LOAD_TORRENT_FILES": "TBD",
-                "PATH_TO_WATCH_TORRENT_FILES": "TBD"
+                "PATH_TO_DIRECT_LOAD_FILES": "E:\\direct_loaded",
+                "PATH_TO_LOAD_TORRENT_FILES": "C:\\programs\\windows_server\\telegram_command_server\\path_to_save_torrents",
+                "PATH_TO_WATCH_TORRENT_FILES": "E:\\torrent_files_to_load"
             },
             env_development: {
                 "TELEGRAM_TOKEN": "374896790:AAFHPIXGoMXGfdIV3zWweKIcJaTc6C6ZQEE",
