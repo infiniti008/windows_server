@@ -1,0 +1,15 @@
+{
+  "name": "telegram_command_server",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "node-telegram-bot-api": "^0.50.0",
+    "wget-improved": "^3.2.0"
+  }
+}
