@@ -108,11 +108,8 @@ function start_bot(){
                 bot.downloadFile(fileId, downloadDir)
                 .then(
                     response => {
-                        // var mode = '777';
                         var oldPath = response;
-                        // fs.chmodSync(oldPath, mode);
-                        var newPath = process.env.PATH_TO_WATCH_TORRENT_FILES + '/' + msg.document.file_name;
-                        // var newPath = __dirname + '/gut/' + msg.document.file_name;
+                        var newPath = process.env.PATH_TO_WATCH_TORRENT_FILES + '\\' + msg.document.file_name;
                         fs.rename(oldPath, newPath, function () {
                             console.log('success rename');
                         });
