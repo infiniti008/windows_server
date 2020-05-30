@@ -5,14 +5,12 @@ var download = require('./downlod');
 var command = {
     '/echo':' - Команда ЭХО.',
     '/help':' - Справка о доступных командах.',
-    '/add_torrent':' - Функция добавления торрент файла для закачки.',
     '/add_link':' - Функция загрузки файла по прямой ссылке.',
     '/save_as':' - Функция Загрузки файла с указанием имени.'
 };
 
 var in_load = false; //Для определения что уже есть текущая загрузка
 var linc = {};
-var add_torr = {};
 var add_li = {};
 var path_to_save = process.env.PATH_TO_DIRECT_LOAD_FILES + '/';
 var save_name = '';
@@ -72,14 +70,7 @@ function start_bot(){
         var chatId = msg.chat.id;
         bot.sendMessage(chatId, help);
     });
-    
-    bot.onText(/\/add_torrent/, function (msg, match) {
-        var chatId = msg.chat.id;
-        var resp = 'Теперь можете прислать торрент файл.';
-        bot.sendMessage(chatId, resp);
-        add_torr[chatId] = 1;
-    });
-    
+        
     bot.onText(/\/add_link/, function (msg, match) {
         var chatId = msg.chat.id;
         if (in_load == false){
@@ -100,7 +91,7 @@ function start_bot(){
             save_name = '';
         }
         if(msg.document){
-            if(add_torr[chatId] == 1 && msg.document.file_name.substring((msg.document.file_name.length - 8), msg.document.file_name.length) == '.torrent'){
+            if(msg.document.file_name.substring((msg.document.file_name.length - 8), msg.document.file_name.length) == '.torrent'){
                 bot.sendMessage(chatId, 'Мы добавили ваш торрент файл в текущие загрузки.');
                 // console.log(msg.document);
                 var fileId = msg.document.file_id;
@@ -117,15 +108,9 @@ function start_bot(){
                     },
                 error => console.log('Rejected: ' + error)
                 );
-                add_torr[chatId] = 0;
-            }
-            else if(add_torr[chatId] == 0){
-                bot.sendMessage(chatId, 'Чтобы добавить торрент файл в загрузки начните с команды /add_torrent');
-                add_torr[chatId] = 0;
             }
             else{
-                bot.sendMessage(chatId, 'Вы прислали не торрент файл!\nНачните сново с команды /add_torrent');
-                add_torr[chatId] = 0;
+                bot.sendMessage(chatId, 'Вы прислали не торрент файл!');
             }
         }
         if(add_li[chatId] == 1 && msg.entities){
@@ -170,8 +155,12 @@ function start_bot(){
         }
         else if( matchCommand(msg.text) ){
             add_li[chatId] = 0;
-            add_torr[chatId] = 0;
-            bot.sendMessage(chatId, 'Я не умею выполнять такие команды!\nКоманда /help поможет Вам узнать мои функции.');
+            var help = 'Я умею выполнять следующие команды: \n';
+            for(var j in command){
+                help += j + command[j] + '\n';
+            }
+            var chatId = msg.chat.id;
+            bot.sendMessage(chatId, help);
         }
     });
 }
