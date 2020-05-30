@@ -3,64 +3,38 @@ var fs = require('fs');
 var download = require('./downlod');
 
 var command = {
-    '/echo':' - Команда ЭХО.',
-    '/help':' - Справка о доступных командах.',
-    '/add_link':' - Функция загрузки файла по прямой ссылке.',
-    '/save_as':' - Функция Загрузки файла с указанием имени.',
-    'Добавить торрент': ' - Отправьте торрент файл в чат'
+    '/echo':' - Команда ЭХО',
+    '/help':' - Справка о доступных командах',
+    'Скачать файл по ссылке':' - Отправте ссылку и следуйте инструкциям',
+    'Поставить торрент на закачку': ' - Отправьте торрент файл'
 };
 
 var in_load = false; //Для определения что уже есть текущая загрузка
 var linc = {};
 var add_li = {};
-var path_to_save = process.env.PATH_TO_DIRECT_LOAD_FILES + '/';
-var save_name = '';
+let loadFileNames = {};
 
 var token = process.env.TELEGRAM_TOKEN;
 function start_bot(){
     var bot = new TelegramBot(token, { polling: true });
     console.log('We start telegramm bot!');
     
+    bot.onText(/\/start/, function (msg, match) {
+        var chatId = msg.chat.id;
+        var resp = `Приветствуем в мире хаоса`;
+        bot.sendMessage(chatId, resp);
+    });
+
+    bot.onText(/\/stop/, function (msg, match) {
+        var chatId = msg.chat.id;
+        var resp = `Еще увидимся`;
+        bot.sendMessage(chatId, resp);
+    });
+
     bot.onText(/\/echo (.+)/, function (msg, match) {
         var chatId = msg.chat.id;
         var resp = match[1];
         bot.sendMessage(chatId, resp);
-    });
-    
-    bot.onText(/\/save_as (.+) (.+)/, function (msg, match){
-    	var chatId = msg.chat.id;
-   	    save_name = match[1];
-	    if (in_load == false){
-                    bot.sendMessage(chatId, 'Мы получили вашу ссылку, начинаем загрузку файла!');
-                    // console.log('12232342342354354');
-                    linc[chatId] = match[2];
-                    var mult = {
-                        start : function(text){
-                            in_load = true;
-                            console.log(text);
-                            bot.sendMessage(chatId, text);
-                        },
-                        stop : function(text){
-                            in_load = false;
-                            console.log(text);
-                            bot.sendMessage(chatId, text);
-                        },
-                        progress : function(text){
-                            in_load = true;
-                            console.log(text);
-                            bot.sendMessage(chatId, text);
-                        },
-                        ero : function(text){
-                            in_load = false;
-                            console.log(text);
-                            bot.sendMessage(chatId, text);
-                        }
-                    }
-                    download.start_load_as(mult, linc[chatId], chatId, save_name);
-                }
-                else{
-                    bot.sendMessage(chatId, 'Идет загрузка другого файла, попробуйте позже!');
-                }
     });
 
     bot.onText(/\/help/, function (msg, match) {
@@ -87,83 +61,139 @@ function start_bot(){
     // // Listen for any kind of message. There are different kinds of
     // // messages.
     bot.on('message', function (msg) {
-        var chatId = msg.chat.id;
-        if(save_name.length >= 2){
-            save_name = '';
-        }
-        if(msg.document){
-            if(msg.document.file_name.substring((msg.document.file_name.length - 8), msg.document.file_name.length) == '.torrent'){
-                bot.sendMessage(chatId, 'Мы добавили ваш торрент файл в текущие загрузки.');
-                // console.log(msg.document);
-                var fileId = msg.document.file_id;
-                var downloadDir = process.env.PATH_TO_LOAD_TORRENT_FILES;
-                bot.downloadFile(fileId, downloadDir)
-                .then(
-                    response => {
-                        var oldPath = response;
-                        var newPath = process.env.PATH_TO_WATCH_TORRENT_FILES + '\\' + msg.document.file_name;
-                        fs.rename(oldPath, newPath, function () {
-                            console.log('success rename');
-                        });
-                        console.log('Fulfilled: ${response}' + response);
-                    },
-                error => console.log('Rejected: ' + error)
-                );
-            }
-            else{
-                bot.sendMessage(chatId, 'Вы прислали не торрент файл!');
-            }
-        }
-        if(add_li[chatId] == 1 && msg.entities){
-            if (msg.entities[0].type == 'url'){
-                if (in_load == false){
-                    bot.sendMessage(chatId, 'Мы получили вашу ссылку, начинаем загрузку файла!');
-                    // console.log('12232342342354354');
-                    linc[chatId] = msg.text;
-                    var mult = {
-                        start : function(text){
-                            in_load = true;
-                            console.log(text);
-                            bot.sendMessage(chatId, text);
+        try{
+            var chatId = msg.chat.id;
+            
+            if(msg.document){
+                if(msg.document.file_name.substring((msg.document.file_name.length - 8), msg.document.file_name.length) == '.torrent'){
+                    bot.sendMessage(chatId, 'Мы добавили ваш торрент файл в текущие загрузки.');
+                    // console.log(msg.document);
+                    var fileId = msg.document.file_id;
+                    var downloadDir = process.env.PATH_TO_LOAD_TORRENT_FILES;
+                    bot.downloadFile(fileId, downloadDir)
+                    .then(
+                        response => {
+                            var oldPath = response;
+                            var newPath = process.env.PATH_TO_WATCH_TORRENT_FILES + '\\' + msg.document.file_name;
+                            fs.rename(oldPath, newPath, function () {
+                                console.log('success rename');
+                            });
+                            console.log('Fulfilled: ${response}' + response);
                         },
-                        stop : function(text){
-                            in_load = false;
-                            console.log(text);
-                            bot.sendMessage(chatId, text);
-                        },
-                        progress : function(text){
-                            in_load = true;
-                            console.log(text);
-                            bot.sendMessage(chatId, text);
-                        },
-                        ero : function(text){
-                            in_load = false;
-                            console.log(text);
-                            bot.sendMessage(chatId, text);
-                        }
-                    }
-                    download.start_load(mult, linc[chatId], chatId);
+                    error => console.log('Rejected: ' + error)
+                    );
                 }
                 else{
-                    bot.sendMessage(chatId, 'Идет загрузка другого файла, попробуйте позже!');
+                    bot.sendMessage(chatId, 'Вы прислали не торрент файл!');
                 }
             }
-            else{
-                add_li[chatId] = 0;
-                in_load = false;
-                bot.sendMessage(chatId, 'Вы прислали не ссылку! Начните сначала с команды /add_link');
+
+            if( msg.entities && msg.entities[0].type == 'url' && !in_load ){
+                try{
+                    in_load = true;
+                    
+                    linc[chatId] = msg.text;
+                    let fileName = linc[chatId].substring((linc[chatId].lastIndexOf('/') + 1), (linc[chatId].lastIndexOf('.') ));
+                    let fileExtension = linc[chatId].substring(linc[chatId].lastIndexOf('.'), linc[chatId].length);
+                    let filePath = fileName + fileExtension;
+                    loadFileNames[chatId] = filePath
+
+                    let response = `- Ответьте "yes" для сохранения с текущим именем ${filePath}\n- Пришлите другое имя файла с таким же расширением "${fileExtension}"!\n- Ответьте "no" для отмены загрузки`;
+                    bot.sendMessage(chatId, response);
+                }
+                catch(err){
+                    in_load = false;
+                    linc[chatId] = null;
+                    loadFileNames[chatId] = null;
+                    console.log(err);
+                    bot.sendMessage(chatId, "ALARM! Че-то пошло не так!!!");
+                }
+            }
+            else if( in_load && linc[chatId] && loadFileNames[chatId] && msg.text == "yes" ){
+                bot.sendMessage(chatId, "Присели-начали со старым именем");
+                var mult = {
+                    start : function(text){
+                        in_load = true;
+                        console.log(text);
+                        bot.sendMessage(chatId, text);
+                    },
+                    stop : function(text){
+                        in_load = false;
+                        console.log(text);
+                        bot.sendMessage(chatId, text);
+                        resetAllDependencies();
+                    },
+                    progress : function(text){
+                        in_load = true;
+                        console.log(text);
+                        bot.sendMessage(chatId, text);
+                    },
+                    ero : function(text){
+                        in_load = false;
+                        console.log(text);
+                        bot.sendMessage(chatId, text);
+                        resetAllDependencies();
+                    }
+                }
+                download.start_load_as(mult, linc[chatId], chatId, loadFileNames[chatId]);
+            }
+            else if( in_load && linc[chatId] && loadFileNames[chatId] && ( msg.text.substring( (msg.text.length - 3), msg.text.length) === loadFileNames[chatId].substring( (loadFileNames[chatId].length - 3), loadFileNames[chatId].length) ) ){
+                bot.sendMessage(chatId, "Присели-начали со новым именем");
+                loadFileNames[chatId] = msg.text;
+                var mult = {
+                    start : function(text){
+                        in_load = true;
+                        console.log(text);
+                        bot.sendMessage(chatId, text);
+                    },
+                    stop : function(text){
+                        in_load = false;
+                        console.log(text);
+                        bot.sendMessage(chatId, text);
+                        resetAllDependencies();
+                    },
+                    progress : function(text){
+                        in_load = true;
+                        console.log(text);
+                        bot.sendMessage(chatId, text);
+                    },
+                    ero : function(text){
+                        in_load = false;
+                        console.log(text);
+                        bot.sendMessage(chatId, text);
+                        resetAllDependencies();
+                    }
+                }
+                download.start_load_as(mult, linc[chatId], chatId, loadFileNames[chatId]);
+            }
+            else if(in_load && msg.text !== "yes"){
+                resetAllDependencies();
+                bot.sendMessage(chatId, "Ну нет так нет!");
+            }
+            else if(in_load){
+                resetAllDependencies();
+                bot.sendMessage(chatId, "Ждем с моря погоды, и когда загрузится предыдущий файл");
+            }
+            else {
+                resetAllDependencies();
+                var help = 'Оказываем услуги согласно прейскуранту: \n';
+                for(var j in command){
+                    help += j + command[j] + '\n';
+                }
+                bot.sendMessage(chatId, "Кукуха поехала такое слать???\n" + help);
             }
         }
-        else if( matchCommand(msg.text) ){
-            add_li[chatId] = 0;
-            var help = 'Я умею выполнять следующие команды: \n';
-            for(var j in command){
-                help += j + command[j] + '\n';
-            }
-            var chatId = msg.chat.id;
-            bot.sendMessage(chatId, help);
+        catch(err){
+            console.log(err);
+            bot.sendMessage(msg.chat.id, "ALARM! Это вообще конец!!!");
         }
     });
+}
+
+function resetAllDependencies(){
+    in_load = false;
+    linc = {};
+    loadFileNames = {};
 }
 
 function matchCommand(r){

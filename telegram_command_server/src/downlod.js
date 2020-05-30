@@ -1,12 +1,10 @@
 var wget = require('wget-improved');
-// var config = require('../config.json');
 const PATH_TO_DIRECT_LOAD_FILES = process.env.PATH_TO_DIRECT_LOAD_FILES;
 
 var pocaz = 0;
 var options = {
     // see options below
 };
-// console.log(file_name + rash);
 
 function start_load(func, link, chatId){
 
@@ -37,8 +35,6 @@ function start_load(func, link, chatId){
 }
 
 function start_load_as(func, link, chatId, name){
-    var file_name = name;
-    var rash = link.substring(link.lastIndexOf('.'), link.length);
     var output = PATH_TO_DIRECT_LOAD_FILES + '/' + name;
     var download = wget.download(link, output, options);
     download.on('error', function(err) {
@@ -47,17 +43,15 @@ function start_load_as(func, link, chatId, name){
     });
     download.on('start', function(fileSize) {
         // console.log(fileSize);
-        func.start(`Мы начали загружать твой файл с именем: ${file_name + rash}\nРазмер файла: ${(fileSize/1024)/1024} Mb`);
+        func.start(`Мы начали загружать твой файл с именем: ${name}\nРазмер файла: ${(fileSize/1024)/1024} Mb`);
     });
     download.on('end', function(output) {
         // console.log(output);
         func.stop('100 %!\nПроцесс загрузки завершен! Теперь вы можете начать новую загрузку!');
     });
     download.on('progress', function(progress) {
-        // code to show progress bar
         if(in_progress(progress) == true){
             var pr = progress.toString().substring(2, 4) + '%';
-            // console.log(pr);
             func.progress(pr);
         }
     });
