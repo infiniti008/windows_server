@@ -2,7 +2,7 @@ module.exports = {
     apps : [
         {
             name: 'telegram_command_server',
-            script: './telegram_command_server/index.js',
+            script: __dirname + '\\telegram_command_server\\index.js',
             autorestart: false,
             watch: false,
             env: {
