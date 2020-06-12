@@ -1,7 +1,7 @@
 var TelegramBot = require('node-telegram-bot-api');
 var fs = require('fs');
 var download = require('./downlod');
-var allowedIds = '208067133';
+var allowedIds = '208067133|291820174';
 
 var command = {
     '/echo':' - Команда ЭХО',
@@ -40,12 +40,17 @@ function start_bot(){
     });
 
     bot.onText(/\/help/, function (msg, match) {
-        var help = 'Я умею выполнять следующие команды: \n';
-        for(var j in command){
-            help += j + command[j] + '\n';
+        if(allowedIds.indexOf(String(chatId)) >= 0){
+            var help = 'Я умею выполнять следующие команды: \n';
+            for(var j in command){
+                help += j + command[j] + '\n';
+            }
+            var chatId = msg.chat.id;
+            bot.sendMessage(chatId, help);
         }
-        var chatId = msg.chat.id;
-        bot.sendMessage(chatId, help);
+        else {
+            bot.sendMessage(chatId, 'Иди лесом. Ты не наш чувак!');
+        }
     });
         
     bot.onText(/\/add_link/, function (msg, match) {
